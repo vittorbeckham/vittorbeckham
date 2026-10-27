@@ -2,7 +2,7 @@
 
 <a id="vittor-beckham"></a>
 
-<img width="100%" alt="Vittor Beckham — ADS e Ciência de Dados" src="https://capsule-render.vercel.app/api?type=venom&color=0:0B1220,50:1D4ED8,100:22D3EE&height=260&section=header&text=VITTOR%20BECKHAM&fontSize=54&fontColor=FFFFFF&fontAlignY=38&desc=ADS%20%7C%20CI%C3%8ANCIA%20DE%20DADOS%20%7C%20FUTURO%20ENGENHEIRO%20DE%20IA&descSize=17&descAlignY=60&animation=twinkling" />
+<img width="100%" alt="Vittor Beckham — ADS e Ciência de Dados" src="assets/header.svg" />
 
 <a href="https://github.com/vittorbeckham">
   <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=3000&pause=1000&color=22D3EE&center=true&vCenter=true&width=700&lines=Transformando+estudos+em+projetos+reais;Desenvolvimento+web+%C2%B7+Python+%C2%B7+Dados+%C2%B7+Sistemas;Aprender+%C2%B7+Construir+%C2%B7+Testar+%C2%B7+Melhorar" alt="Frases animadas" />
@@ -31,6 +31,8 @@
 </tr>
 </table>
 
+<img width="100%" height="24" alt="" src="assets/divider.svg" />
+
 ## 👨‍💻 Sobre mim
 
 Sou estudante de **Análise e Desenvolvimento de Sistemas (ADS)** e estou em formação em **Ciência de Dados**. Meu próximo objetivo acadêmico é cursar uma **pós-graduação em Engenharia de Inteligência Artificial**, para aprofundar minha formação e desenvolver soluções com IA.
@@ -38,6 +40,8 @@ Sou estudante de **Análise e Desenvolvimento de Sistemas (ADS)** e estou em for
 Aqui compartilho projetos acadêmicos e exercícios que conectam **programação, análise de dados e fundamentos de infraestrutura**. Estou aprendendo HTML, CSS, JavaScript e Python, e valorizo a prática, a documentação e o trabalho em equipe.
 
 > 💡 *Exploro a conexão entre interfaces, código, dados e infraestrutura — aprendendo na prática.*
+
+<img width="100%" height="24" alt="" src="assets/divider.svg" />
 
 ## 🛠️ Minha base tecnológica
 
@@ -67,6 +71,8 @@ Aqui compartilho projetos acadêmicos e exercícios que conectam **programação
 | 📊 **Ciência de Dados** | NumPy, pandas, Matplotlib, Seaborn e scikit-learn em notebooks de estudo |
 | 🐧 **Sistemas operacionais** | Linux, processos, sinais, prioridades e monitoramento de CPU e memória |
 | 🔌 **Redes** | Cisco Packet Tracer, endereçamento IPv4, DHCP e testes de conectividade |
+
+<img width="100%" height="24" alt="" src="assets/divider.svg" />
 
 ## 🚀 Projetos que representam minha jornada
 
@@ -135,6 +141,8 @@ Projeto acadêmico da **Faculdade Serra Dourada** (ADS): bot para a plataforma *
 </tr>
 </table>
 
+<img width="100%" height="24" alt="" src="assets/divider.svg" />
+
 ## 🔭 Construindo agora
 
 <div align="center">
@@ -157,6 +165,8 @@ Projeto acadêmico da **Faculdade Serra Dourada** (ADS): bot para a plataforma *
 | Integração completa de autenticação | 🔜 Próxima etapa |
 | Recursos de monitoramento e IA | 🔜 Próxima etapa |
 
+<img width="100%" height="24" alt="" src="assets/divider.svg" />
+
 ## 🎯 Onde quero chegar
 
 - [ ] Cursar uma **pós-graduação em Engenharia de Inteligência Artificial**
@@ -164,6 +174,8 @@ Projeto acadêmico da **Faculdade Serra Dourada** (ADS): bot para a plataforma *
 - [ ] Evoluir meus estudos de análise e visualização de dados com Python
 - [ ] Melhorar a reprodutibilidade e as conclusões dos notebooks
 - [ ] Continuar documentando os projetos e os resultados dos experimentos
+
+<img width="100%" height="24" alt="" src="assets/divider.svg" />
 
 ## 📈 Meu GitHub em números
 
