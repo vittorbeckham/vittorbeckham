@@ -2,7 +2,7 @@
 
 <a id="vittor-beckham"></a>
 
-<img width="100%" alt="Vittor Beckham — Dev de dados, estilo pixel 8-bit" src="assets/header.svg" />
+<img width="100%" alt="Vittor Beckham — Dev / cientista dados, estilo pixel 8-bit" src="assets/header.svg" />
 
 <a href="https://github.com/vittorbeckham">
   <img src="https://readme-typing-svg.demolab.com?font=Press+Start+2P&size=14&duration=3000&pause=1000&color=FFD93D&center=true&vCenter=true&width=760&height=50&lines=PLAYER+1%3A+VITTOR+BECKHAM;CLASSE%3A+DEV+DE+DADOS;PR%C3%93XIMA+FASE%3A+P%C3%93S+EM+IA" alt="Frases animadas em estilo arcade" />
