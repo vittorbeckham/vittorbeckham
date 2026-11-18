@@ -1,0 +1,97 @@
+{
+  "login": "vittorbeckham",
+  "name": "Vittor Beckham",
+  "kicker": "ADS · CIÊNCIA DE DADOS · IA",
+  "tagline": "Dev e cientista de dados em formação. Conecto interfaces, código, dados e infraestrutura — e aprendo construindo.",
+  "now": "construindo agora: VIGIA AI",
+  "portrait": "github",
+  "portrait_focus": [0.53, 0.42, 0.62],
+  "code": [
+    "# vittor.py",
+    "class Vittor(Dev):",
+    "    curso = \"ADS · Serra Dourada\"",
+    "    foco = [\"dados\", \"IA\", \"web\"]",
+    "    stack = [\"python\", \"pandas\", \"numpy\"]",
+    "    agora = \"VIGIA AI\"",
+    "",
+    "    def proxima_fase(self):",
+    "        return \"pós em Engenharia de IA\""
+  ],
+  "player": {
+    "title": ["Pronto para a", "próxima fase"],
+    "class": "Dev de dados",
+    "base": "ADS · Serra Dourada",
+    "stats": [
+      {"label": "Python", "detail": "pandas · NumPy · asyncio", "level": 7, "color": "coral"},
+      {"label": "Dados", "detail": "scikit-learn · Jupyter", "level": 6, "color": "sun"},
+      {"label": "Web", "detail": "HTML · CSS · JavaScript", "level": 5, "color": "mint"},
+      {"label": "Infra", "detail": "Linux · Redes · Docker", "level": 5, "color": "indigo"}
+    ],
+    "mission": "próxima missão: pós em Engenharia de IA"
+  },
+  "tiles": [
+    {
+      "label": "FORMAÇÃO",
+      "color": "coral",
+      "value": 2,
+      "unit": "formações",
+      "text": "Análise e Desenvolvimento de Sistemas na Faculdade Serra Dourada e Ciência de Dados na EBAC.",
+      "href": "https://github.com/vittorbeckham/projetos-ebac"
+    },
+    {
+      "label": "PROJETOS",
+      "color": "sun",
+      "value": "featured",
+      "unit": "projetos",
+      "text": "Dados, redes, Linux e automação em Python — cada um documentado com relatório e evidências.",
+      "href": "https://github.com/vittorbeckham?tab=repositories"
+    },
+    {
+      "label": "EM CONSTRUÇÃO",
+      "color": "mint",
+      "value": null,
+      "unit": "VIGIA AI",
+      "text": "Monitoramento inteligente com Flask, MySQL, Nginx e Docker. Próxima fase: pós em Engenharia de IA.",
+      "href": "https://github.com/vittorbeckham"
+    }
+  ],
+  "featured": [
+    {
+      "repo": "projetos-ebac",
+      "phase": "FASE 1",
+      "title": "Ciência de Dados · EBAC",
+      "color": "sun",
+      "description": "Concessão de cartões de crédito: preparação de dados, Random Forest, acurácia e matriz de confusão. Exercícios de NumPy.",
+      "tags": ["Python", "Jupyter", "scikit-learn"]
+    },
+    {
+      "repo": "projeto-lan-grupo-RVH-",
+      "phase": "FASE 2",
+      "title": "Redes · Bragato Mix",
+      "color": "coral",
+      "description": "Infraestrutura de um comércio real no Cisco Packet Tracer, com DHCP, topologia, documentação e testes de ping.",
+      "tags": ["Packet Tracer", "IPv4", "DHCP"]
+    },
+    {
+      "repo": "trabalho-linux-processos-",
+      "phase": "FASE 3",
+      "title": "SO · Processos Linux",
+      "color": "mint",
+      "description": "Processos do Minecraft Java no Ubuntu: hierarquia PID/PPID, CPU, memória, prioridades e sinais de controle.",
+      "tags": ["Linux", "Ubuntu", "Processos"]
+    },
+    {
+      "repo": "Vittor.bot",
+      "phase": "FASE 4",
+      "title": "Python · Vittor.bot",
+      "color": "indigo",
+      "description": "Bot para a plataforma Highrise: interação e movimentação, SDK, tarefas assíncronas e código em módulos.",
+      "tags": ["Python", "asyncio", "Highrise SDK"]
+    }
+  ],
+  "links": [
+    {"label": "repositórios", "href": "https://github.com/vittorbeckham?tab=repositories"},
+    {"label": "notebooks de dados", "href": "https://github.com/vittorbeckham/projetos-ebac"},
+    {"label": "voltar ao topo", "href": "#vittor-beckham"}
+  ]
+}

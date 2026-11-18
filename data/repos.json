@@ -1,0 +1,34 @@
+{
+ "projetos-ebac": {
+  "description": "aqui estao todos meus projetos durante meus estudo na área de ciência de dados ",
+  "language": "Jupyter Notebook",
+  "stargazers_count": 0,
+  "forks_count": 0,
+  "pushed_at": "2024-02-17T22:55:33Z",
+  "html_url": "https://github.com/vittorbeckham/projetos-ebac"
+ },
+ "projeto-lan-grupo-RVH-": {
+  "description": null,
+  "language": null,
+  "stargazers_count": 0,
+  "forks_count": 0,
+  "pushed_at": "2026-10-02T18:02:48Z",
+  "html_url": "https://github.com/vittorbeckham/projeto-lan-grupo-RVH-"
+ },
+ "trabalho-linux-processos-": {
+  "description": "Atividade da disciplina de Análise e Desenvolvimento de Sistemas – aula do dia 25/08.",
+  "language": null,
+  "stargazers_count": 1,
+  "forks_count": 0,
+  "pushed_at": "2026-09-08T23:31:47Z",
+  "html_url": "https://github.com/vittorbeckham/trabalho-linux-processos-"
+ },
+ "Vittor.bot": {
+  "description": null,
+  "language": "Python",
+  "stargazers_count": 0,
+  "forks_count": 0,
+  "pushed_at": "2024-08-30T22:14:49Z",
+  "html_url": "https://github.com/vittorbeckham/Vittor.bot"
+ }
+}

@@ -1,0 +1,51 @@
+name: Cartas do perfil
+
+on:
+  schedule:
+    - cron: "17 6 * * *"   # todo dia, 03:17 em Brasília
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [render_cards.py, data/profile.json, fonts/**, .github/workflows/cartas.yml]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cartas
+  cancel-in-progress: false
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Atualizar dados de contribuição
+        env:
+          # CONTRIB_TOKEN (PAT opcional) inclui contribuições privadas; sem ele usa o GITHUB_TOKEN
+          GH_TOKEN: ${{ secrets.CONTRIB_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_LOGIN: ${{ github.repository_owner }}
+        run: python scripts/fetch_contributions.py
+
+      - name: Gerar cartas
+        run: python render_cards.py
+
+      - name: Commit das cartas
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data cartas README.md
+          if git diff --staged --quiet; then
+            echo "Nada mudou."
+          else
+            git commit -m "chore: atualizar cartas do perfil"
+            git push
+          fi
