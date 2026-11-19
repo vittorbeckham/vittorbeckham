@@ -4,8 +4,6 @@
   "kicker": "ADS · CIÊNCIA DE DADOS · IA",
   "tagline": "Dev e cientista de dados em formação. Conecto interfaces, código, dados e infraestrutura — e aprendo construindo.",
   "now": "construindo agora: VIGIA AI",
-  "portrait": "github",
-  "portrait_focus": [0.53, 0.42, 0.62],
   "code": [
     "# vittor.py",
     "class Vittor(Dev):",
@@ -18,9 +16,8 @@
     "        return \"pós em Engenharia de IA\""
   ],
   "player": {
-    "title": ["Pronto para a", "próxima fase"],
-    "class": "Dev de dados",
-    "base": "ADS · Serra Dourada",
+    "title": ["Vittor,", "o Dev de Dados"],
+    "info": [["NÍVEL", "ADS"], ["BASE", "Serra Dourada"], ["ARMA", "Python"]],
     "stats": [
       {"label": "Python", "detail": "pandas · NumPy · asyncio", "level": 7, "color": "coral"},
       {"label": "Dados", "detail": "scikit-learn · Jupyter", "level": 6, "color": "sun"},

@@ -14,14 +14,12 @@ ficam separadas só por <br>, e as que dividem uma linha ficam coladas.
 from __future__ import annotations
 
 import base64
-import io
 import json
 import os
 import re
 import subprocess
 import sys
 import tempfile
-import urllib.request
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from html import escape
@@ -114,8 +112,12 @@ ANIM_CSS = f"""
 .sheen{{animation:sheen 6s ease-in-out infinite}}
 .nudge{{animation:nudge 1.8s ease-in-out infinite;transform-box:fill-box}}
 .nudgeup{{animation:nudgeup 1.8s ease-in-out infinite;transform-box:fill-box}}
-.crt{{animation:crt 4.5s linear infinite}}
-@keyframes crt{{0%{{transform:translateY(-60px)}}45%,100%{{transform:translateY(400px)}}}}
+.far{{animation:far 12s linear infinite}}.near{{animation:near .5s linear infinite}}
+.eq{{animation:eq 1.3s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}}
+.bit{{animation:bit 2.4s linear infinite}}
+@keyframes far{{to{{transform:translateX(-104px)}}}}@keyframes near{{to{{transform:translateX(-24px)}}}}
+@keyframes eq{{0%,100%{{transform:none}}50%{{transform:scaleY(.35)}}}}
+@keyframes bit{{0%{{opacity:0;transform:none}}15%{{opacity:1}}100%{{opacity:0;transform:translateY(-34px)}}}}
 @keyframes rise{{from{{opacity:0;transform:translateY(16px)}}to{{opacity:1;transform:none}}}}
 @keyframes fade{{from{{opacity:0}}to{{opacity:1}}}}
 @keyframes slide{{from{{opacity:0;transform:translateX(-24px)}}to{{opacity:1;transform:none}}}}
@@ -129,7 +131,7 @@ ANIM_CSS = f"""
 @keyframes nudge{{0%,100%{{transform:none}}50%{{transform:translateX(3px)}}}}
 @keyframes nudgeup{{0%,100%{{transform:none}}50%{{transform:translate(2px,-2px)}}}}
 .still{{display:none}}
-@media (prefers-reduced-motion:reduce){{.a,.live,.ring,.sheen,.nudge,.nudgeup,.crt{{animation:none!important}}.smil{{display:none}}.still{{display:inline}}}}
+@media (prefers-reduced-motion:reduce){{.a,.live,.ring,.sheen,.nudge,.nudgeup,.far,.near,.eq,.bit{{animation:none!important}}.smil{{display:none}}.still{{display:inline}}}}
 """
 
 
@@ -245,54 +247,64 @@ def row_slot(i: int, n: int) -> tuple[float, float, float]:
     return slot, i * (body + GAP) - i * slot, body
 
 
-# ── Retrato em meio-tom ─────────────────────────────────────────────────────
-def load_image(src: str, login: str) -> bytes | None:
-    if not src:
-        return None
-    if src == "github":
-        src = f"https://github.com/{login}.png?size=460"
-    if src.startswith(("http://", "https://")):
-        req = urllib.request.Request(src, headers={"User-Agent": "profile-cards-script"})
-        with urllib.request.urlopen(req, timeout=30) as r:
-            return r.read()
-    return (ROOT / src).read_bytes()
+# ── Personagem em pixel art ────────────────────────────────────────────────
+# Desenhado à mão, pixel a pixel: boné preto com a logo amarela, barba,
+# camiseta preta, jeans e tênis branco. Cada letra é uma cor; "." é vazio.
+SCREEN = "#0B0B1A"  # fundo da tela do jogo
+SPRITE_PAL = {
+    "K": "#0B0B1A", "C": "#26263F", "c": "#45456B", "b": "#17172C", "Y": COLORS["sun"],
+    "S": "#8A5634", "s": "#6A3F25", "H": "#1A120E", "E": "#0B0B1A", "W": "#F6F3EC", "M": "#4A2618",
+    "T": "#1F1F33", "t": "#36365C", "R": COLORS["coral"], "P": "#2E2E8C", "p": "#1D1D52",
+    "O": "#F0EDE6", "o": "#9C978C",
+}
+SPRITE_TOP = [  # boné, rosto e tronco (iguais nos dois quadros)
+    "......KKKKKKKKKK......",
+    "....KKCCCCCCCCCCKK....",
+    "...KCCCCCCCCCCcCCCK...",
+    "..KCCCCCCCCCCCcCCCCK..",
+    "..KCCCCCCCYYCCCCCCCK..",
+    "..KCCCCCCCCCCCCCCCCK..",
+    ".KCCCCCCCCCCCCCCCCCCK.",
+    "KbbbbbbbbbbbbbbbbbbbbK",
+    ".KKssssssssssssssssKK.",
+    "..KSSSSSSSSSSSSSSSSK..",
+    ".KSSSSWESSSSSSWESSSSK.",
+    ".KsSSSEESSSSSSEESSSsK.",
+    "..KSSSSSSSssSSSSSSSK..",
+    "..KHSSSSSSSSSSSSSSHK..",
+    "..KHHSSHHHHHHHHSSHHK..",
+    "..KHHHSSSMMMMSSSHHHK..",
+    "...KHHHHHHHHHHHHHHK...",
+    "....KKHHHHHHHHHHKK....",
+    "........KssssK........",
+    "...KKTTTTTTTTTTTTKK...",
+    "..KTTTTTTTTTTTTTTTTK..",
+    ".KTTtTTTTTYYTTTTTtTTK.",
+    ".KTTtTTTTTRRTTTTTtTTK.",
+    ".KSKTTTTTTTTTTTTTTKSK.",
+    ".KSKTTTTTTTTTTTTTTKSK.",
+    ".KSSKPPPPPPPPPPPPKSSK.",
+    "..KK.KPPPPPPPPPPK.KK..",
+]
+SPRITE_LEGS = (  # quadro A (parado) e quadro B (passada)
+    [".....KPPPPKKPPPPK.....", ".....KpPPPKKPPPpK.....", ".....KPPPPKKPPPPK.....",
+     "....KOOOOOKKOOOOOK....", "....KoooooKKoooooK....", ".....KKKKK..KKKKK....."],
+    ["....KPPPPK..KPPPPK....", "...KPPPPK....KPPPPK...", "...KpPPPK....KPPPpK...",
+     "..KOOOOOK....KOOOOOK..", "..KoooooK....KoooooK..", "...KKKKK......KKKKK..."],
+)
+SPRITE_BLINK = (10, [".KSSSSSSSSSSSSSSSSSSK.", ".KsSSSKKSSSSSSKKSSSsK."])  # olhos fechados
 
 
-# Pixel art em duas paletas: você em tons quentes (coral → amarelo), as telas
-# ao fundo em tons frios (índigo → ciano). Cada paleta tem os próprios limiares
-# (quantis), para o rosto não virar um bloco só.
-WARM = ["#1B1B36", "#3B2456", "#9E3F6E", COLORS["coral"], "#FFA06B", COLORS["sun"]]
-COOL = [None, "#1D1D52", "#2E2E8C", INDIGO, "#6E8CF0", COLORS["sky"]]
-SCREEN = "#0B0B1A"
-
-
-def pixel_portrait(raw: bytes, focus=(.5, .5, 1.0), n: int = 48) -> list[dict[str, list[int]]]:
-    """Foto → n×n pixels. Devolve, por linha, {cor: [colunas]} (None = fundo da tela)."""
-    from PIL import Image, ImageOps
-    im = Image.open(io.BytesIO(raw)).convert("RGB")
-    w, h = im.size
-    s = int(min(w, h) * focus[2])
-    x0, y0 = max(0, min(w - s, int(focus[0] * w - s / 2))), max(0, min(h - s, int(focus[1] * h - s / 2)))
-    small = im.crop((x0, y0, x0 + s, y0 + s)).resize((n, n), Image.LANCZOS)
-    lum, rgb = ImageOps.autocontrast(small.convert("L"), cutoff=1).load(), small.load()
-    cool = [[(lambda r, g, b: b - (r + g) / 2 > 18 and b > 45)(*rgb[i, j]) for i in range(n)] for j in range(n)]
-
-    def thresholds(flag: bool, qs: list[float]) -> list[int]:
-        v = sorted(lum[i, j] for j in range(n) for i in range(n) if cool[j][i] == flag) or [0, 255]
-        return [v[int(q * (len(v) - 1))] for q in qs]
-
-    tw = thresholds(False, [.32, .5, .64, .77, .89])
-    tc = thresholds(True, [.3, .55, .75, .88, .96])
-    rows = []
-    for j in range(n):
-        row: dict[str, list[int]] = defaultdict(list)
-        for i in range(n):
-            pal, th = (COOL, tc) if cool[j][i] else (WARM, tw)
-            col = pal[sum(lum[i, j] > t for t in th)]
-            if col:
-                row[col].append(i)
-        rows.append(row)
-    return rows
+def sprite_paths(rows: list[str], x0: float, y0: float, px: float) -> str:
+    """Um <path> por cor, com um quadrado por pixel (bem mais leve que um <rect> cada)."""
+    by: dict[str, list[tuple[int, int]]] = defaultdict(list)
+    for j, row in enumerate(rows):
+        for i, ch in enumerate(row):
+            if ch != ".":
+                by[ch].append((i, j))
+    return "".join(
+        f'<path fill="{SPRITE_PAL[ch]}" d="' + "".join(f"M{x0 + i * px:g} {y0 + j * px:g}h{px}v{px}h-{px}z" for i, j in cells) + '"/>'
+        for ch, cells in by.items())
 
 
 # ── Janela de código com digitação ─────────────────────────────────────────
@@ -593,60 +605,129 @@ def card_repo(i: int, n_per_row: int, r: dict, meta: dict, delay: float) -> Card
     return c
 
 
-def card_player(p: dict, raw: bytes | None, score: int, delay: float) -> Card:
-    """Carta final: 'seleção de personagem' com o retrato em pixel art numa tela CRT."""
+def card_player(p: dict, score: int, delay: float) -> Card:
+    """Carta final: uma cena de jogo com o personagem andando, na classe Dev de Dados."""
+    import random
     H = 380
     pl = p.get("player") or {}
-    c = Card("personagem", W, H + GAP,
-             f"Seleção de personagem: {p['name']}, {pl.get('class', '')}. " + " ".join(pl.get("title", [])) + ".", delay)
+    title = pl.get("title") or ["Vittor,", "o Dev de Dados"]
+    c = Card("personagem", W, H + GAP, f"Seleção de personagem: {' '.join(title)}. Um boneco em pixel art "
+             f"de boné preto e barba anda por uma cidade à noite ao lado de um painel de dados.", delay)
     c.add(paper(W, H))
 
-    # tela
     sx, sy, ss = 28, 28, 324
+    gt = sy + 262  # topo do chão
     c.add(f'<defs><clipPath id="scr">{rect(sx, sy, ss, ss, "#000", RADIUS)}</clipPath>'
+          f'<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{SCREEN}"/>'
+          f'<stop offset="1" stop-color="#262670"/></linearGradient>'
           f'<pattern id="scan" width="4" height="3" patternUnits="userSpaceOnUse">'
-          f'<rect width="4" height="1" fill="#000" opacity=".16"/></pattern></defs>')
-    c.add(rect(sx, sy, ss, ss, SCREEN, RADIUS))
-    px0, py0, psz = sx + 24, sy + 26, 276
-    if raw:
-        rows = pixel_portrait(raw, tuple(p.get("portrait_focus") or (.5, .5, 1.0)))
-        cell = psz / len(rows)
-        for j, row in enumerate(rows):  # a imagem "carrega" de cima para baixo, como num console
-            paths = "".join(
-                f'<path fill="{col}" d="' + "".join(f"M{px0 + i * cell:.1f} {py0 + j * cell:.1f}h{cell - .7:.2f}v{cell - .7:.2f}h-{cell - .7:.2f}z" for i in cols) + '"/>'
-                for col, cols in row.items())
-            c.add(c.g("fade", .25 + .022 * j, paths))
-    else:
-        initials = "".join(w[0] for w in p["name"].split()[:2])
-        c.add(c.text(sx + ss / 2, sy + ss / 2 + 24, initials, PIXEL, 64, COLORS["sun"], "middle"))
-    c.add(f'<g clip-path="url(#scr)"><rect x="{sx}" y="{sy}" width="{ss}" height="{ss}" fill="url(#scan)"/>')
-    if not STATIC:  # faixa de brilho que varre a tela (fica fora dela no estado natural)
-        c.add(f'<rect x="{sx}" y="{sy - 60}" width="{ss}" height="46" fill="#fff" opacity=".07" '
-              f'transform="translate(0 -400)"{c.loop("crt", 1.6)}/>')
-    c.add("</g>")
-    # HUD do jogo
-    hud = (c.text(sx + 16, sy + 20, "PLAYER 1", PIXEL, 7, COLORS["sun"])
-           + c.text(sx + ss - 16, sy + 20, "♥ ♥ ♥", PIXEL, 7, COLORS["coral"], "end")
-           + c.text(sx + 16, sy + ss - 11, "LVL ADS", PIXEL, 7, COLORS["mint"])
-           + c.text(sx + ss - 16, sy + ss - 11, f"SCORE {score:06d}", PIXEL, 7, COLORS["sky"], "end"))
+          f'<rect width="4" height="1" fill="#000" opacity=".14"/></pattern></defs>')
+    scene = [rect(sx, sy, ss, ss, "url(#sky)")]
+
+    # estrelas piscando e a lua
+    rnd = random.Random(p["login"])
+    anim, still = [], []
+    for _ in range(26):
+        x, y = sx + rnd.randrange(8, ss - 8) // 4 * 4, sy + rnd.randrange(30, 170) // 4 * 4
+        base = f'<rect x="{x}" y="{y}" width="3" height="3" fill="{rnd.choice(["#F6F3EC", "#F6F3EC", COLORS["sky"]])}" opacity=".7"'
+        still.append(base + "/>")
+        anim.append(base + f'><animate attributeName="opacity" values=".7;.1;.7" dur="{rnd.choice([1.6, 2.4, 3.2])}s" '
+                           f'begin="{rnd.uniform(0, 2):.2f}s" repeatCount="indefinite"/></rect>')
+    scene.append(c.smil("".join(anim), "".join(still)))
+    moon = ["..YYYY..", ".YYYYYY.", "YYYYoYYY", "YYYYYYYY", "YYoYYYYY", "YYYYYYoY", ".YYYYYY.", "..YYYY.."]
+    mx, my = sx + ss - 48, sy + 34
+    scene.append("".join(rect(mx + i * 4, my + j * 4, 4, 4, COLORS["sun"] if ch == "Y" else "#E5B92E")
+                         for j, row in enumerate(moon) for i, ch in enumerate(row) if ch != "."))
+
+    # cidade ao fundo (paralaxe lenta) e chão (rápido): a cena anda, o boneco caminha
+    tile = []
+    for bx, bw, bh in ((0, 22, 70), (26, 18, 100), (48, 26, 56), (78, 20, 86)):
+        tile.append(rect(bx, -bh, bw, bh, "#11113A") + rect(bx, -bh, bw, 3, "#3A3A8C"))  # prédio + beiral iluminado
+        for wy in range(-bh + 8, -10, 12):
+            for wx in range(bx + 4, bx + bw - 4, 7):
+                if (wx * 7 + wy * 3) % 5 < 2:
+                    tile.append(rect(wx, wy, 3, 4, COLORS["sun"], extra=' opacity=".55"'))
+    tile = "".join(tile)
+    far = "".join(f'<g transform="translate({sx + 104 * k} {gt})">{tile}</g>' for k in range(5))
+    scene.append(f'<g{c.loop("far", 0)}>{far}</g>')
+    ground = []
+    for k in range(16):
+        gx = sx + 24 * k
+        ground += [rect(gx, gt, 24, 6, COLORS["mint"]), rect(gx + 4, gt, 3, 3, "#8FE09A"), rect(gx + 14, gt + 6, 4, 3, "#4FA35B"),
+                   rect(gx, gt + 9, 24, 30, "#3B2456"), rect(gx + 6, gt + 18, 4, 4, "#9E3F6E"), rect(gx + 17, gt + 28, 3, 3, "#2A1A40")]
+    scene.append(f'<g{c.loop("near", 0)}>{"".join(ground)}</g>')
+
+    # o personagem
+    px = 6
+    x0, y0 = sx + 50, gt - px * (len(SPRITE_TOP) + len(SPRITE_LEGS[0]))
+    scene.append(rect(x0 + 22, gt + 1, 88, 5, SCREEN, extra=' opacity=".45"'))
+    body = sprite_paths(SPRITE_TOP, x0, y0, px)
+    ly = y0 + px * len(SPRITE_TOP)
+    leg_a, leg_b = (sprite_paths(f, x0, ly, px) for f in SPRITE_LEGS)
+    walk = ".5s"
+    walking = (f'<g>{leg_a}<animate attributeName="visibility" values="visible;hidden" keyTimes="0;.5" '
+               f'calcMode="discrete" dur="{walk}" repeatCount="indefinite"/></g>'
+               f'<g visibility="hidden">{leg_b}<animate attributeName="visibility" values="hidden;visible" '
+               f'keyTimes="0;.5" calcMode="discrete" dur="{walk}" repeatCount="indefinite"/></g>')
+    brow, brows = SPRITE_BLINK
+    blink = (f'<g visibility="hidden">{sprite_paths(brows, x0, y0 + px * brow, px)}'
+             f'<animate attributeName="visibility" values="hidden;visible;hidden" keyTimes="0;.93;.98" '
+             f'calcMode="discrete" dur="3.4s" begin="{c.at(1.0)}" repeatCount="indefinite"/></g>')
+    char = body + c.smil(walking + blink, leg_a)
+    name = c.text(x0 + 66, y0 - 10, "VITTOR", PIXEL, 7, COLORS["sun"], "middle")
+    scene.append(c.g("rise", .3, f'<g shape-rendering="crispEdges">{char}</g>' + name))
+
+    # painel de dados da classe: barras vivas (equalizador) e bits subindo
+    hx, hy, hw, hh = x0 + 132 + 18, sy + 102, 104, 86
+    panel = [rect(hx, hy, hw, hh, SCREEN, 3, ' opacity=".82"'),
+             rect(hx + .5, hy + .5, hw - 1, hh - 1, "none", 3, f' stroke="{COLORS["sky"]}" stroke-opacity=".7"'),
+             c.text(hx + 8, hy + 14, "DADOS", PIXEL, 6, COLORS["sky"])]
+    panel.append(f'<rect x="{hx + hw - 12}" y="{hy + 8}" width="4" height="4" fill="{COLORS["mint"]}"{c.loop("live", .5)}/>')
+    for k, (hgt, col) in enumerate(zip((.55, .82, .45, 1.0, .7), (COLORS["coral"], COLORS["sun"], COLORS["mint"], COLORS["sky"], GLOW))):
+        bh = 50 * hgt
+        panel.append(f'<rect x="{hx + 11 + 17 * k}" y="{hy + hh - 10 - bh:.1f}" width="12" height="{bh:.1f}" fill="{col}" '
+                     f'style="animation-delay:{c.delay + .2 * k:.2f}s;animation-duration:{1.1 + .23 * k:.2f}s"'
+                     + ('' if STATIC else ' class="eq"') + '/>')
+    for k, (ch, col) in enumerate((("1", COLORS["mint"]), ("0", COLORS["sky"]), ("1", COLORS["sun"]))):
+        if not STATIC:
+            panel.append(f'<g opacity="0"{c.loop("bit", .4 + .8 * k)}>'
+                         f'{c.text(hx + 20 + 30 * k, hy - 6, ch, PIXEL, 7, col)}</g>')
+    beam = "".join(f'<rect x="{x0 + 120 + 8 * k}" y="{y0 + 150 - 6 * k}" width="4" height="4" fill="{COLORS["sky"]}" '
+                   f'opacity=".8"{c.loop("live", .2 * k)}/>' for k in range(4))
+    scene.append(c.g("pop", .8, "".join(panel) + beam))
+
+    # balão de fala
+    msg = 'print("olá!")'
+    bw = PIXEL.width(msg, 6) + 14
+    bx, by = x0 + 118, sy + 36
+    bubble = (rect(bx, by, bw, 20, "#F6F3EC") + rect(bx - 2, by + 2, bw + 4, 16, "#F6F3EC")
+              + rect(bx + 6, by + 20, 6, 4, "#F6F3EC") + rect(bx + 2, by + 24, 4, 4, "#F6F3EC")
+              + c.text(bx + 7, by + 14, msg, PIXEL, 6, INK))
+    scene.append(c.g("pop", 1.3, bubble))
+
+    # HUD de baixo numa faixa escura + scanlines por cima de tudo
+    scene.append(rect(sx, sy + ss - 24, ss, 24, SCREEN))
+    scene.append(rect(sx, sy, ss, ss, "url(#scan)"))
+    c.add(f'<g clip-path="url(#scr)">{"".join(scene)}</g>')
+    hud = (c.text(sx + 14, sy + 20, "PLAYER 1", PIXEL, 7, COLORS["sun"])
+           + c.text(sx + ss - 62, sy + 20, "♥ ♥ ♥", PIXEL, 7, COLORS["coral"], "end")
+           + c.text(sx + 14, sy + ss - 8, "LVL ADS", PIXEL, 7, COLORS["mint"])
+           + c.text(sx + ss - 14, sy + ss - 8, f"SCORE {score:06d}", PIXEL, 7, COLORS["sky"], "end"))
     c.add(c.g("fade", .2, hud))
 
     # ficha à direita
     x0 = 390
     tri = c.text(x0, 58, "▶", PIXEL, 8, COLORS["coral"])
     c.add(c.g("fade", .3, tri + c.text(x0 + 16, 58, "SELEÇÃO DE PERSONAGEM", MONO_M, 9.5, INK3, ls=1.3)))
-    title = pl.get("title") or ["Pronto para a", "próxima fase"]
     c.add(c.g("rise", .4, c.text(x0 - 2, 104, title[0], SERIF, 40, INK)))
     if len(title) > 1:
         c.add(c.g("rise", .5, c.text(x0 - 2, 148, title[1], ITALIC, 40, INDIGO)))
     info = []
-    if pl.get("class"):
-        info += [("CLASSE  ", MONO_M, 9.5, INK3), (pl["class"], MONO, 11, INK), ("     ", MONO, 11, INK)]
-    if pl.get("base"):
-        info += [("BASE  ", MONO_M, 9.5, INK3), (pl["base"], MONO, 11, INK)]
+    for k, (lab, val) in enumerate(pl.get("info", [])):
+        info += [(("     " if k else "") + lab + "  ", MONO_M, 9.5, INK3), (val, MONO, 11, INK)]
     c.add(c.g("fade", .6, c.runs(x0, 184, info, extra=' xml:space="preserve"') + rect(x0, 202, W - 28 - x0, 1, LINE)))
 
-    # atributos em blocos de pixel (níveis definidos em profile.json → player.stats)
+    # atributos em blocos de pixel (níveis em profile.json → player.stats)
     seg, gap, nseg = 16, 3, 10
     for k, st in enumerate(pl.get("stats", [])[:4]):
         y = 234 + 31 * k
@@ -662,9 +743,9 @@ def card_player(p: dict, raw: bytes | None, score: int, delay: float) -> Card:
 
     # "continuar?" piscando, como no fim de fase dos fliperamas
     cont = c.text(x0, 358, "▶ CONTINUAR?", PIXEL, 9, COLORS["coral"])
-    blink = ('<animate attributeName="opacity" values="1;0" keyTimes="0;.5" calcMode="discrete" dur="1.1s" '
-             f'begin="{c.at(2.2)}" repeatCount="indefinite"/>')
-    c.add(c.g("fade", 1.6, c.smil(cont.replace("</text>", blink + "</text>"), cont)
+    blink_txt = ('<animate attributeName="opacity" values="1;0" keyTimes="0;.5" calcMode="discrete" dur="1.1s" '
+                 f'begin="{c.at(2.2)}" repeatCount="indefinite"/>')
+    c.add(c.g("fade", 1.6, c.smil(cont.replace("</text>", blink_txt + "</text>"), cont)
               + c.text(x0 + PIXEL.width("▶ CONTINUAR?", 9) + 16, 357, pl.get("mission", ""), MONO, 10.5, INK3)))
     return c
 
@@ -739,7 +820,7 @@ def main() -> None:
     cards += [card_tile(i, len(tiles), t, tile_value(t, p), D[f"tile-{i + 1}"]) for i, t in enumerate(tiles)]
     cards += [card_title("Projetos em", "destaque", dark, D["titulo"]) for dark in (False, True)]
     cards += [card_repo(i, 2, r, repos.get(r["repo"]) or {}, D[f"repo-{i}"]) for i, r in enumerate(p["featured"])]
-    cards.append(card_player(p, load_image(p.get("portrait"), p["login"]), s["total"], D["personagem"]))
+    cards.append(card_player(p, s["total"], D["personagem"]))
 
     OUT.mkdir(exist_ok=True)
     keep = {f"{c.slug}.svg" for c in cards}
