@@ -6,7 +6,7 @@
   "now": "construindo agora: VIGIA AI",
   "code": [
     "# vittor.py",
-    "class Vittor(Dev):",
+    "class Vittor(CientistaDeDados, Dev):",
     "    curso = \"ADS · Serra Dourada\"",
     "    foco = [\"dados\", \"IA\", \"web\"]",
     "    stack = [\"python\", \"pandas\", \"numpy\"]",
@@ -16,7 +16,7 @@
     "        return \"pós em Engenharia de IA\""
   ],
   "player": {
-    "title": ["Vittor,", "o Dev de Dados"],
+    "title": ["Vittor,", "Cientista de Dados e Dev"],
     "info": [["NÍVEL", "ADS"], ["BASE", "Serra Dourada"], ["ARMA", "Python"]],
     "stats": [
       {"label": "Python", "detail": "pandas · NumPy · asyncio", "level": 7, "color": "coral"},

@@ -606,11 +606,11 @@ def card_repo(i: int, n_per_row: int, r: dict, meta: dict, delay: float) -> Card
 
 
 def card_player(p: dict, score: int, delay: float) -> Card:
-    """Carta final: uma cena de jogo com o personagem andando, na classe Dev de Dados."""
+    """Carta final: uma cena de jogo com o personagem andando, na classe Cientista de Dados e Dev."""
     import random
     H = 380
     pl = p.get("player") or {}
-    title = pl.get("title") or ["Vittor,", "o Dev de Dados"]
+    title = pl.get("title") or ["Vittor,", "Cientista de Dados e Dev"]
     c = Card("personagem", W, H + GAP, f"Seleção de personagem: {' '.join(title)}. Um boneco em pixel art "
              f"de boné preto e barba anda por uma cidade à noite ao lado de um painel de dados.", delay)
     c.add(paper(W, H))
@@ -721,7 +721,8 @@ def card_player(p: dict, score: int, delay: float) -> Card:
     c.add(c.g("fade", .3, tri + c.text(x0 + 16, 58, "SELEÇÃO DE PERSONAGEM", MONO_M, 9.5, INK3, ls=1.3)))
     c.add(c.g("rise", .4, c.text(x0 - 2, 104, title[0], SERIF, 40, INK)))
     if len(title) > 1:
-        c.add(c.g("rise", .5, c.text(x0 - 2, 148, title[1], ITALIC, 40, INDIGO)))
+        size = min(40, (W - 28 - x0) / ITALIC.width(title[1], 1))  # classe longa encolhe para caber
+        c.add(c.g("rise", .5, c.text(x0 - 2, 148, title[1], ITALIC, round(size, 1), INDIGO)))
     info = []
     for k, (lab, val) in enumerate(pl.get("info", [])):
         info += [(("     " if k else "") + lab + "  ", MONO_M, 9.5, INK3), (val, MONO, 11, INK)]
